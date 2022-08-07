@@ -24,4 +24,8 @@ public class GlobalExceptionHandler {
         return R.error("未知异常");
 
     }
+    @ExceptionHandler(CustomException.class)
+    public R<String> exceptionHandler(CustomException customException){
+        return R.error(customException.getMessage());
+    }
 }

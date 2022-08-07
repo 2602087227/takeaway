@@ -1,6 +1,7 @@
 package com.cjj.takeaway.filter;
 
 import com.alibaba.fastjson.JSON;
+import com.cjj.takeaway.common.BaseContext;
 import com.cjj.takeaway.common.R;
 import lombok.extern.log4j.Log4j;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +41,10 @@ public class LoginCheckFilter implements Filter {
         }
         //4.判断登录状态，如果一登录，则直接放行
         if (request.getSession().getAttribute("employee")!=null){
+            Long empId = (Long) request.getSession().getAttribute("employee");
+            BaseContext.setCurrentId(empId);
+            long id = Thread.currentThread().getId();
+            log.info("线程id为{}",id);
             filterChain.doFilter(request,response);
             return;
         }

@@ -5,16 +5,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cjj.takeaway.common.R;
 import com.cjj.takeaway.entity.Employee;
 import com.cjj.takeaway.service.EmployeeService;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
-
-import javax.annotation.Resources;
 import javax.servlet.http.HttpServletRequest;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 
 @Slf4j
@@ -109,12 +105,30 @@ public class EmployeeController {
         employeeService.page(pageInfo,queryWrapper);
         return R.success(pageInfo);
     }
+
+    /**
+     * 修改员工状态
+     * @param request
+     * @param employee
+     * @return
+     */
     @PutMapping
     public R<String> update(HttpServletRequest request,@RequestBody Employee employee){
         Long empId = (Long)request.getSession().getAttribute("employee");
-        employee.setUpdateUser(empId);
-        employee.setUpdateTime(LocalDateTime.now());
+//        employee.setUpdateUser(empId);
+//        employee.setUpdateTime(LocalDateTime.now());
+        long id = Thread.currentThread().getId();
+        log.info("线程id为{}",id);
         employeeService.updateById(employee);
         return R.success("员工信息修改成功");
+    }
+
+    @GetMapping("/{id}")
+    public R<Employee> update(@PathVariable Long id){
+        Employee emp = employeeService.getById(id);
+        if(emp != null){
+            return  R.success(emp);
+        }
+        return R.error("没有查询到对应员工信息");
     }
 }
