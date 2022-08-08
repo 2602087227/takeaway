@@ -124,7 +124,7 @@ public class EmployeeController {
     }
 
     @GetMapping("/{id}")
-    public R<Employee> update(@PathVariable Long id){
+    public R<Employee> getById(@PathVariable Long id){
         Employee emp = employeeService.getById(id);
         if(emp != null){
             return  R.success(emp);
