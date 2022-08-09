@@ -28,12 +28,26 @@ public class DishController {
     @Autowired
     private CategoryService categoryService;
 
+    /**
+     * 新增菜品
+     *
+     * @param dishDto
+     * @return
+     */
     @PostMapping
     public R<String> save(@RequestBody DishDto dishDto) {
         dishService.saveWithFlavor(dishDto);
         return R.success("新增菜品成功");
     }
 
+    /**
+     * 分页查询菜品
+     *
+     * @param page
+     * @param pageSize
+     * @param name
+     * @return
+     */
     @GetMapping("/page")
     public R<Page> page(int page, int pageSize, String name) {
 
@@ -75,14 +89,45 @@ public class DishController {
         return R.success(dishDtoPage);
     }
 
+    /**
+     * 修改时回传菜品信息
+     *
+     * @param id
+     * @return
+     */
     @GetMapping("/{id}")
-    public R<DishDto> get(@PathVariable Long id){
+    public R<DishDto> get(@PathVariable Long id) {
         DishDto dishDto = dishService.getByIdWithFlavor(id);
         return R.success(dishDto);
     }
+
+    /**
+     * 修改菜品信息
+     *
+     * @param dishDto
+     * @return
+     */
     @PutMapping
-    public R<String> update(@RequestBody DishDto dishDto){
+    public R<String> update(@RequestBody DishDto dishDto) {
         dishService.updateWithFlavor(dishDto);
         return R.success("修改成功！");
+    }
+
+    /**
+     * 新增套餐时回传菜品信息
+     *
+     * @param dish
+     * @return
+     */
+    @GetMapping("/list")
+    public R<List<Dish>> list(Dish dish) {
+
+        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(dish.getCategoryId() != null, Dish::getCategoryId, dish.getCategoryId());
+        queryWrapper.eq(Dish::getStatus,1);
+        queryWrapper.orderByAsc(Dish::getSort).orderByDesc(Dish::getUpdateTime);
+
+        List<Dish> list = dishService.list(queryWrapper);
+        return R.success(list);
     }
 }
