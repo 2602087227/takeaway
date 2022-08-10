@@ -7,7 +7,6 @@ import com.cjj.takeaway.dto.DishDto;
 import com.cjj.takeaway.entity.Category;
 import com.cjj.takeaway.entity.Dish;
 import com.cjj.takeaway.service.CategoryService;
-import com.cjj.takeaway.service.DishFlavorService;
 import com.cjj.takeaway.service.DishService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +20,6 @@ import java.util.stream.Collectors;
 public class DishController {
     @Autowired
     private DishService dishService;
-
-    @Autowired
-    private DishFlavorService dishFlavorService;
 
     @Autowired
     private CategoryService categoryService;
@@ -114,6 +110,27 @@ public class DishController {
     }
 
     /**
+     * 修改菜品状态
+     *
+     * @param status
+     * @param ids
+     * @return
+     */
+    @PostMapping("/status/{status}")
+    public R<String> setStatus(@PathVariable int status, @RequestParam List<Long> ids) {
+        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(Dish::getId, ids);
+        List<Dish> dishList = dishService.list(queryWrapper);
+        dishList.stream().map((item) -> {
+            item.setStatus(status);
+            return item;
+        }).collect(Collectors.toList());
+
+        dishService.updateBatchById(dishList);
+        return R.success("状态修改成功");
+    }
+
+    /**
      * 新增套餐时回传菜品信息
      *
      * @param dish
@@ -124,10 +141,22 @@ public class DishController {
 
         LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(dish.getCategoryId() != null, Dish::getCategoryId, dish.getCategoryId());
-        queryWrapper.eq(Dish::getStatus,1);
+        queryWrapper.eq(Dish::getStatus, 1);
         queryWrapper.orderByAsc(Dish::getSort).orderByDesc(Dish::getUpdateTime);
 
         List<Dish> list = dishService.list(queryWrapper);
         return R.success(list);
+    }
+
+    /**
+     * 删除菜品
+     *
+     * @param ids
+     * @return
+     */
+    @DeleteMapping
+    public R<String> delete(@RequestParam List<Long> ids) {
+        dishService.deleteWithFlavor(ids);
+        return R.success("删除菜品成功");
     }
 }

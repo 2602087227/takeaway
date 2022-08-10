@@ -2,6 +2,7 @@ package com.cjj.takeaway.service.imp;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cjj.takeaway.common.CustomException;
 import com.cjj.takeaway.dto.DishDto;
 import com.cjj.takeaway.entity.Dish;
 import com.cjj.takeaway.entity.DishFlavor;
@@ -31,7 +32,7 @@ public class DishServiceImp extends ServiceImpl<DishMapper, Dish> implements Dis
         this.save(dishDto);
         Long dishId = dishDto.getId();
         List<DishFlavor> flavors = dishDto.getFlavors();
-        flavors = flavors.stream().map((item)-> {
+        flavors = flavors.stream().map((item) -> {
             item.setDishId(dishId);
             return item;
         }).collect(Collectors.toList());
@@ -44,10 +45,10 @@ public class DishServiceImp extends ServiceImpl<DishMapper, Dish> implements Dis
         Dish dish = this.getById(id);
 
         DishDto dishDto = new DishDto();
-        BeanUtils.copyProperties(dish,dishDto);
+        BeanUtils.copyProperties(dish, dishDto);
 
         LambdaQueryWrapper<DishFlavor> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(DishFlavor::getDishId,id);
+        queryWrapper.eq(DishFlavor::getDishId, id);
         List<DishFlavor> list = dishFlavorService.list(queryWrapper);
         dishDto.setFlavors(list);
         return dishDto;
@@ -59,16 +60,31 @@ public class DishServiceImp extends ServiceImpl<DishMapper, Dish> implements Dis
         this.updateById(dishDto);
 
         LambdaQueryWrapper<DishFlavor> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(DishFlavor::getDishId,dishDto.getId());
+        queryWrapper.eq(DishFlavor::getDishId, dishDto.getId());
         dishFlavorService.remove(queryWrapper);
 
 
         List<DishFlavor> flavors = dishDto.getFlavors();
-        flavors.stream().map((item)->{
+        flavors.stream().map((item) -> {
             item.setDishId(dishDto.getId());
             return item;
         }).collect(Collectors.toList());
 
         dishFlavorService.saveBatch(flavors);
+    }
+
+    @Override
+    public void deleteWithFlavor(List<Long> ids) {
+        LambdaQueryWrapper<Dish> dishLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        dishLambdaQueryWrapper.in(Dish::getId, ids);
+        dishLambdaQueryWrapper.eq(Dish::getStatus, 1);
+        int count = this.count(dishLambdaQueryWrapper);
+        if (count > 0) {
+            throw new CustomException("菜品正在售卖中不可删除");
+        }
+        this.removeByIds(ids);
+        LambdaQueryWrapper<DishFlavor> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(DishFlavor::getDishId, ids);
+        dishFlavorService.remove(queryWrapper);
     }
 }
