@@ -6,7 +6,9 @@ import com.cjj.takeaway.common.R;
 import com.cjj.takeaway.dto.DishDto;
 import com.cjj.takeaway.entity.Category;
 import com.cjj.takeaway.entity.Dish;
+import com.cjj.takeaway.entity.DishFlavor;
 import com.cjj.takeaway.service.CategoryService;
+import com.cjj.takeaway.service.DishFlavorService;
 import com.cjj.takeaway.service.DishService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,9 @@ public class DishController {
 
     @Autowired
     private CategoryService categoryService;
+
+    @Autowired
+    private DishFlavorService dishFlavorService;
 
     /**
      * 新增菜品
@@ -137,7 +142,7 @@ public class DishController {
      * @return
      */
     @GetMapping("/list")
-    public R<List<Dish>> list(Dish dish) {
+    public R<List<DishDto>> list(Dish dish) {
 
         LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(dish.getCategoryId() != null, Dish::getCategoryId, dish.getCategoryId());
@@ -145,8 +150,30 @@ public class DishController {
         queryWrapper.orderByAsc(Dish::getSort).orderByDesc(Dish::getUpdateTime);
 
         List<Dish> list = dishService.list(queryWrapper);
-        return R.success(list);
+        List<DishDto> dishDtoList = list.stream().map((item) -> {
+            DishDto dishDto = new DishDto();
+
+            //将list里面的类容拷贝给DishDto
+            BeanUtils.copyProperties(item, dishDto);
+
+            //给DishDto里面的categoryName赋值
+            Long categoryId = item.getCategoryId();
+            Category category = categoryService.getById(categoryId);
+            if (category != null) {
+                String categoryName = category.getName();
+                dishDto.setCategoryName(categoryName);
+            }
+
+            LambdaQueryWrapper<DishFlavor> dishFlavorQueryWrapper = new LambdaQueryWrapper<>();
+            dishFlavorQueryWrapper.eq(DishFlavor::getDishId, item.getId());
+            List<DishFlavor> dishFlavorList = dishFlavorService.list(dishFlavorQueryWrapper);
+            dishDto.setFlavors(dishFlavorList);
+            return dishDto;
+
+        }).collect(Collectors.toList());
+        return R.success(dishDtoList);
     }
+
 
     /**
      * 删除菜品

@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.reflection.MetaObject;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 
 @Component
@@ -23,7 +22,7 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
     @Override
     public void updateFill(MetaObject metaObject) {
         long id = Thread.currentThread().getId();
-        log.info("线程id为{}",id);
+        log.info("线程id为{}", id);
         metaObject.setValue("updateTime", LocalDateTime.now());
         metaObject.setValue("updateUser", BaseContext.getCurrentId());
     }

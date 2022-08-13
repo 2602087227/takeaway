@@ -9,6 +9,7 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 
 import java.util.List;
+
 @Slf4j
 @Configuration
 public class WebMvc extends WebMvcConfigurationSupport {
@@ -25,7 +26,7 @@ public class WebMvc extends WebMvcConfigurationSupport {
         //设置消息转换器，底层使用jackson将java对象转换为json
         messageConverter.setObjectMapper(new JacksonObjectMapper());
         //将上面的消息转换器对象追加到mvc框架的转换器集合中
-        converters.add(0,messageConverter);
+        converters.add(0, messageConverter);
     }
 
 }
