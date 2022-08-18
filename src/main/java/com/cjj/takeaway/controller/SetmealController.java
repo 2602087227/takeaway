@@ -11,6 +11,8 @@ import com.cjj.takeaway.service.SetmealService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,6 +35,7 @@ public class SetmealController {
      * @param setmealDto
      * @return
      */
+    @CacheEvict(value = "setmaelCache",allEntries = true)
     @PostMapping
     public R<String> save(@RequestBody SetmealDto setmealDto) {
         setmealService.saveWithDish(setmealDto);
@@ -86,6 +89,7 @@ public class SetmealController {
      * @param ids
      * @return
      */
+    @CacheEvict(value = "setmaelCache",allEntries = true)
     @PostMapping("/status/{status}")
     public R<String> setStatus(@PathVariable int status, @RequestParam List<Long> ids) {
         LambdaQueryWrapper<Setmeal> queryWrapper = new LambdaQueryWrapper<>();
@@ -118,12 +122,19 @@ public class SetmealController {
      * @param ids
      * @return
      */
+    @CacheEvict(value = "setmaelCache",allEntries = true)
     @DeleteMapping
     public R<String> delete(@RequestParam List<Long> ids) {
         setmealService.deleteWithDish(ids);
         return R.success("删除套餐成功");
     }
 
+    /**
+     * 根据条件查询套餐数据
+     * @param setmeal
+     * @return
+     */
+    @Cacheable(value = "setmealCache" ,key = "#setmeal.id+'_'+#setmeal.status")
     @GetMapping("/list")
     public R<List<Setmeal>> list(Setmeal setmeal) {
         Long categoryId = setmeal.getCategoryId();

@@ -12,6 +12,9 @@ import com.cjj.takeaway.service.DishFlavorService;
 import com.cjj.takeaway.service.DishService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,6 +43,7 @@ public class DishController {
      * @param dishDto
      * @return
      */
+//    @CacheEvict(value = "dishCache",key = "#dishDto.id" )
     @PostMapping
     public R<String> save(@RequestBody DishDto dishDto) {
         dishService.saveWithFlavor(dishDto);
@@ -107,6 +111,7 @@ public class DishController {
      * @param id
      * @return
      */
+//    @Cacheable(value = "DishCache",key = "#id")
     @GetMapping("/{id}")
     public R<DishDto> get(@PathVariable Long id) {
         DishDto dishDto = dishService.getByIdWithFlavor(id);
