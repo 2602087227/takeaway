@@ -8,6 +8,10 @@ import com.cjj.takeaway.entity.Category;
 import com.cjj.takeaway.entity.Setmeal;
 import com.cjj.takeaway.service.CategoryService;
 import com.cjj.takeaway.service.SetmealService;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +41,7 @@ public class SetmealController {
      */
     @CacheEvict(value = "setmaelCache",allEntries = true)
     @PostMapping
+    @ApiOperation(value = "新增套餐接口")
     public R<String> save(@RequestBody SetmealDto setmealDto) {
         setmealService.saveWithDish(setmealDto);
         return R.success("新增成功");
@@ -51,6 +56,12 @@ public class SetmealController {
      * @return
      */
     @GetMapping("/page")
+    @ApiOperation(value = "套餐分页查询接口")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "page",value = "页码",required = true),
+            @ApiImplicitParam(name = "pageSize", value = "每页数量",required = true),
+            @ApiImplicitParam(name = "name",value = "套餐名称",required = false)
+    })
     public R<Page> page(int page, int pageSize, String name) {
         Page<Setmeal> pageInfo = new Page<>(page, pageSize);
         LambdaQueryWrapper<Setmeal> setmealLambdaQueryWrapper = new LambdaQueryWrapper<>();
